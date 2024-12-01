@@ -1,10 +1,9 @@
 use std::collections::BTreeMap;
+use std::str::FromStr;
 
 use anyhow::{bail, Result};
 
-use crate::util::parse_str_to_usize;
-
-fn pair_total_distance(content: String) -> Result<usize> {
+pub fn total_distance(content: String) -> Result<usize> {
     let mut left = Vec::new();
     let mut right = Vec::new();
 
@@ -13,8 +12,8 @@ fn pair_total_distance(content: String) -> Result<usize> {
 
         match (split.next(), split.next()) {
             (Some(left_str), Some(right_str)) => {
-                left.push(parse_str_to_usize(left_str)?);
-                right.push(parse_str_to_usize(right_str)?);
+                left.push(usize::from_str(left_str)?);
+                right.push(usize::from_str(right_str)?);
             }
             _ => bail!("Improper format."),
         }
@@ -33,7 +32,7 @@ fn pair_total_distance(content: String) -> Result<usize> {
     Ok(total_distance)
 }
 
-fn similarity_score(content: String) -> Result<usize> {
+pub fn similarity_score(content: String) -> Result<usize> {
     let mut left = Vec::new();
     let mut right = BTreeMap::new();
 
@@ -42,9 +41,9 @@ fn similarity_score(content: String) -> Result<usize> {
 
         match (split.next(), split.next()) {
             (Some(left_str), Some(right_str)) => {
-                left.push(parse_str_to_usize(left_str)?);
+                left.push(usize::from_str(left_str)?);
 
-                let r_key = parse_str_to_usize(right_str)?;
+                let r_key = usize::from_str(right_str)?;
                 right
                     .entry(r_key)
                     .and_modify(|curr| *curr += 1)
@@ -58,8 +57,8 @@ fn similarity_score(content: String) -> Result<usize> {
         .into_iter()
         .map(|l| {
             if right.contains_key(&l) {
-                let arity = *right.get(&l).unwrap();
-                l * arity
+                let count = *right.get(&l).unwrap();
+                l * count
             } else {
                 0
             }
@@ -78,7 +77,7 @@ mod tests {
         let data = std::fs::read("./tests/day1_test.txt")?;
         let content = String::from_utf8(data)?;
 
-        assert_eq!(11, pair_total_distance(content)?);
+        assert_eq!(11, total_distance(content)?);
 
         Ok(())
     }
@@ -87,7 +86,7 @@ mod tests {
     fn part_1() -> Result<()> {
         let data = std::fs::read("./tests/day1-1.txt")?;
         let content = String::from_utf8(data)?;
-        assert_eq!(pair_total_distance(content)?, 1388114);
+        assert_eq!(total_distance(content)?, 1388114);
         Ok(())
     }
 
