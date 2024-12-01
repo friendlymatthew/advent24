@@ -74,8 +74,7 @@ mod tests {
 
     #[test]
     fn part_1_sample() -> Result<()> {
-        let data = std::fs::read("./tests/day1_test.txt")?;
-        let content = String::from_utf8(data)?;
+        let content = std::fs::read_to_string("./tests/day1_test.txt")?;
 
         assert_eq!(11, total_distance(content)?);
 
@@ -84,16 +83,14 @@ mod tests {
 
     #[test]
     fn part_1() -> Result<()> {
-        let data = std::fs::read("./tests/day1-1.txt")?;
-        let content = String::from_utf8(data)?;
+        let content = std::fs::read_to_string("./tests/day1-1.txt")?;
         assert_eq!(total_distance(content)?, 1388114);
         Ok(())
     }
 
     #[test]
     fn part_2_sample() -> Result<()> {
-        let data = std::fs::read("./tests/day1_test.txt")?;
-        let content = String::from_utf8(data)?;
+        let content = std::fs::read_to_string("./tests/day1_test.txt")?;
 
         assert_eq!(31, similarity_score(content)?);
 
@@ -102,8 +99,7 @@ mod tests {
 
     #[test]
     fn part_2() -> Result<()> {
-        let data = std::fs::read("./tests/day1-1.txt")?;
-        let content = String::from_utf8(data)?;
+        let content = std::fs::read_to_string("./tests/day1-1.txt")?;
         assert_eq!(similarity_score(content)?, 23529853);
         Ok(())
     }
