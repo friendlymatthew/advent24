@@ -1,9 +1,11 @@
 use anyhow::Result;
 
-use aoc::day1::total_distance;
+use aoc::day1::day_1_part_1;
 
 fn main() -> Result<()> {
-    let data = std::fs::read_to_string("./tests/day1-1.txt")?;
-    total_distance(data)?;
+    for _ in 0..1000 {
+        day_1_part_1()?;
+    }
+
     Ok(())
 }

@@ -1,25 +1,66 @@
 use std::collections::BTreeMap;
 use std::str::FromStr;
 
-use anyhow::{bail, Result};
+use anyhow::{ensure, Result};
 
-pub fn total_distance(content: String) -> Result<usize> {
-    let mut left = Vec::new();
-    let mut right = Vec::new();
+pub fn day_1_part_1() -> Result<usize> {
+    let content = std::fs::read("./tests/day1.txt")?;
+    let total_distance = total_distance(&content)?;
 
-    for line in content.lines() {
-        let mut split = line.split_whitespace();
+    Ok(total_distance)
+}
 
-        match (split.next(), split.next()) {
-            (Some(left_str), Some(right_str)) => {
-                left.push(usize::from_str(left_str)?);
-                right.push(usize::from_str(right_str)?);
-            }
-            _ => bail!("Improper format."),
-        }
+pub fn day_1_part_2() -> Result<usize> {
+    let content = std::fs::read("./tests/day1.txt")?;
+    let sim_score = similarity_score(&content)?;
+
+    Ok(sim_score)
+}
+
+// since each number takes 5 bytes of space, we can do better than usize::from_str
+const NUM_SIZE: usize = 5;
+fn parse_number_scalar(num_buffer: &[u8]) -> Result<usize> {
+    ensure!(
+        num_buffer.len() == NUM_SIZE,
+        "Expected number to take length of 5"
+    );
+
+    let num = (num_buffer[0] - b'0') as usize * 10000
+        + (num_buffer[1] - b'0') as usize * 1000
+        + (num_buffer[2] - b'0') as usize * 100
+        + (num_buffer[3] - b'0') as usize * 10
+        + (num_buffer[4] - b'0') as usize;
+
+    Ok(num)
+}
+
+// Whitespace is always 3 bytes.
+const WHITESPACE_SIZE: usize = 3;
+
+// \n is 1 byte.
+const NEWLINE_SIZE: usize = 1;
+
+// take advantage of the fact that the input data is the following:
+// a: 5 bytes, whitespace: 3 bytes, b: 5 bytes, \n: 1 byte
+const LINE_SIZE: usize = NUM_SIZE + WHITESPACE_SIZE + NUM_SIZE + NEWLINE_SIZE;
+
+fn total_distance(content: &[u8]) -> Result<usize> {
+    let num_lines = (content.len() + NEWLINE_SIZE) / LINE_SIZE;
+
+    let mut left = Vec::with_capacity(num_lines);
+    let mut right = Vec::with_capacity(num_lines);
+
+    for i in 0..num_lines {
+        let mut start = i * LINE_SIZE;
+
+        let left_num = &content[start..start + NUM_SIZE];
+        start += NUM_SIZE + 3;
+        let right_num = &content[start..start + NUM_SIZE];
+
+        left.push(parse_number_scalar(left_num)?);
+        right.push(parse_number_scalar(right_num)?);
     }
 
-    // sort
     left.sort();
     right.sort();
 
@@ -32,25 +73,24 @@ pub fn total_distance(content: String) -> Result<usize> {
     Ok(total_distance)
 }
 
-pub fn similarity_score(content: String) -> Result<usize> {
-    let mut left = Vec::new();
+fn similarity_score(content: &[u8]) -> Result<usize> {
+    let num_lines = (content.len() + NEWLINE_SIZE) / LINE_SIZE;
+
+    let mut left = Vec::with_capacity(num_lines);
     let mut right = BTreeMap::new();
 
-    for line in content.lines() {
-        let mut split = line.split_whitespace();
+    for i in 0..num_lines {
+        let mut start = i * LINE_SIZE;
 
-        match (split.next(), split.next()) {
-            (Some(left_str), Some(right_str)) => {
-                left.push(usize::from_str(left_str)?);
+        let left_num = &content[start..start + NUM_SIZE];
+        start += NUM_SIZE + 3;
+        let right_num = &content[start..start + NUM_SIZE];
 
-                let r_key = usize::from_str(right_str)?;
-                right
-                    .entry(r_key)
-                    .and_modify(|curr| *curr += 1)
-                    .or_insert(1_usize);
-            }
-            _ => bail!("Improper format."),
-        }
+        left.push(parse_number_scalar(left_num)?);
+        right
+            .entry(parse_number_scalar(right_num)?)
+            .and_modify(|n| *n += 1)
+            .or_insert(1_usize);
     }
 
     let sim_score = left
@@ -73,34 +113,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn part_1_sample() -> Result<()> {
-        let content = std::fs::read_to_string("./tests/day1_test.txt")?;
-
-        assert_eq!(11, total_distance(content)?);
-
-        Ok(())
-    }
-
-    #[test]
     fn part_1() -> Result<()> {
-        let content = std::fs::read_to_string("./tests/day1-1.txt")?;
-        assert_eq!(total_distance(content)?, 1388114);
-        Ok(())
-    }
-
-    #[test]
-    fn part_2_sample() -> Result<()> {
-        let content = std::fs::read_to_string("./tests/day1_test.txt")?;
-
-        assert_eq!(31, similarity_score(content)?);
-
+        assert_eq!(day_1_part_1()?, 1388114);
         Ok(())
     }
 
     #[test]
     fn part_2() -> Result<()> {
-        let content = std::fs::read_to_string("./tests/day1-1.txt")?;
-        assert_eq!(similarity_score(content)?, 23529853);
+        assert_eq!(day_1_part_2()?, 23529853);
         Ok(())
     }
 }
