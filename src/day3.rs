@@ -3,14 +3,6 @@ use std::str::FromStr;
 use anyhow::{ensure, Result};
 use regex::Regex;
 
-pub fn day_3_part_1() -> Result<()> {
-    Ok(())
-}
-
-pub fn day_3_part_2() -> Result<()> {
-    Ok(())
-}
-
 fn parse_num(n_str: &str) -> Result<usize> {
     ensure!(n_str.len() < 4 && n_str.len() > 0);
     let n = usize::from_str(n_str)?;
